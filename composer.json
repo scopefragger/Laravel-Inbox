@@ -1,0 +1,19 @@
+{
+  "name": "scopefragger/laravelinbox",
+  "description": "",
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "Scopefragger\\LaravelInbox\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Mark Jones",
+      "email": "mark@arcade247.co.uk"
+    }
+  ],
+  "version": "1.0.0",
+  "minimum-stability": "stable",
+  "require": {}
+}
