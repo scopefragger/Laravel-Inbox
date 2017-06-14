@@ -16,4 +16,6 @@ class LaravelInboxServiceProvider extends ServiceProvider
             __DIR__.'/Config/config.php' => config_path('laravel-inbox.php'),
         ],'laravel-inbox');
     }
+
+
 }
