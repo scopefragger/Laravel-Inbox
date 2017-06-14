@@ -24,6 +24,7 @@ class ThreadsParticipantsMessages extends Migration
             $table->uuid('uuid')->unique();
             $table->string('thread_id');
             $table->string('participant_id');
+            $table->string('body');
             $table->softDeletes();
             $table->timestamps();
         });
