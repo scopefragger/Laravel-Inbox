@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Scopefragger\LaravelInbox\Models\Messages;
+use Scopefragger\LaravelInbox\Models\Participants;
+use Scopefragger\LaravelInbox\Models\Threads;
 
 class LaravelInboxServiceProvider extends ServiceProvider
 {
@@ -35,7 +37,7 @@ class LaravelInboxServiceProvider extends ServiceProvider
 
         /** Create a new thread if none is provided */
         if (empty($threadID)) {
-            $threadID = $this->create();
+            $threadID = $this->create($fromParticipant, $toParticipants);
         }
 
         /** Adds new participants to the conversation */
@@ -51,7 +53,7 @@ class LaravelInboxServiceProvider extends ServiceProvider
 
     }
 
-    /**
+    /**ss
      * Adds new participant to thread
      *
      * @param null $threadID
@@ -59,55 +61,95 @@ class LaravelInboxServiceProvider extends ServiceProvider
      */
     public function addParticipants($threadID, $participants)
     {
+        return Participant::firstOrCreate(['thread_id', $threadID, 'user_id' => $participants]);
+    }
 
+    public function getParticipants($threadID)
+    {
+        return Participants::where('thread_id', $threadID)
+    }
+
+    public function getMessageThread($threadID)
+    {
+        return Message::where('thread_id', $threadID)->get();
+    }
+
+    public function getMessage($message_id)
+    {
+        return Message::where('id', $message_id)->first();
+    }
+
+    public function getThread($thread_id)
+    {
+        return Threads::where('id', $thread_id)->first();
+    }
+
+    /**
+     * Marks Message read
+     *
+     * Marks the massage provided i param 1 as read for all participants
+     * in provided
+     */
+    public function markRead($message_id, $participants = [])
+    {
+        return $this->setValue($message_id, $participants, 'read', true);
+    }
+
+    /**
+     * Marks Message unread
+     *
+     * Marks the massage provided i param 1 as unread for all participants
+     * in provided
+     */
+    public function markUnread($message_id, $participants)
+    {
+        return $this->setValue($message_id, $participants, 'read', false);
+    }
+
+
+    public function setAction($message_id, $participants = [], $key, $value)
+    {
+        if (!empty($participants)) {
+            foreach ($participants as $row) {
+                $action = Actions::firstOrCreate(['message_id' => $message_id, 'participant_id' => $row, 'key' => 'read'])->first();
+                $action->value = $value;
+                $action->save();
+            }
+        }
+    }
+
+    /**
+     * Soft deletes message
+     */
+    public function deleteMessage($message_id)
+    {
+        return Messages::where('id', $message_id)->delete();
+    }
+
+    /**
+     * Soft Deletes thread
+     */
+    public function deleteThread($thread_id)
+    {
+        return Threads::where('id', $thread_id)->delete();
     }
 
     /**
      *
      */
-    public function read()
+    public function create($fromParticipant, $toParticipants)
     {
+        /** Create the thread */
+        $thread = new Threads();
+        $thread->enabled = true;
+        $thread->save();
 
-    }
+        /** Add all participants */
+        $toParticipants[] = $fromParticipant;
+        $this->addParticipants($thread->id, $toParticipants);
 
-    /**
-     *
-     */
-    public function markRead()
-    {
-
-    }
-
-    /**
-     *
-     */
-    public function markUnread()
-    {
-
-    }
-
-    /**
-     *
-     */
-    public function deleteMessage()
-    {
-
-    }
-
-    /**
-     *
-     */
-    public function deleteThread()
-    {
-
-    }
-
-    /**
-     *
-     */
-    public function create()
-    {
-
+        /** return the ID */
+        return $thread->id;
     }
 
 

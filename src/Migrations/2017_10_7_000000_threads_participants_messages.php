@@ -32,6 +32,7 @@ class ThreadsParticipantsMessages extends Migration
         Schema::create('inbox_participants', function (Blueprint $table) {
             $table->uuid('uuid')->unique();
             $table->string('thread_id');
+            $table->string('user_id');
             $table->softDeletes();
             $table->timestamps();
         });
